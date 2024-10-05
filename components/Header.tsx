@@ -23,7 +23,12 @@ import {
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { createUser } from "@/utils/db/actions";
+import {
+  createUser,
+  getUserByemail,
+  getUnreadNotification
+} from "@/utils/db/actions";
+import { clearInterval } from "timers";
 // import {useMediaQuery} from ''
 const clientId =
   "BJKdDFkNtkWX87XqkuWrDu4rbkSvWyQZ5lswS0ucINxxcN0inRVW8zzKAywPPzgiOHP7_3PcfFwfpvcQvSdaLRs";
@@ -43,7 +48,7 @@ const privateKeyProvider = new EthereumPrivateKeyProvider({
 });
 const web3auth = new Web3Auth({
   clientId,
-  web3AuthNetwork: WEB3AUTH_NETWORK.TESTNET, // Changed from SAPPHIRE_MAINNET to TESTNET
+  web3AuthNetwork: WEB3AUTH_NETWORK.TESTNET,
   privateKeyProvider,
 });
 
@@ -90,4 +95,35 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (userInfo && userInfo.email) {
+        const user = await getUserByemail(userInfo.email);
+        if (user) {
+          const unreadNotifications = await getUnreadNotification(user.id);
+          setNotification(unreadNotifications);
+        }
+      }
+    };
+    fetchNotifications();
+
+    // check notification after 3 seconds
+    const notificationInterval = setInterval(fetchNotifications, 3000);
+    return () => clearInterval(notificationInterval);
+  },[userInfo]);
+
+  useEffect(()=>{
+    const fetchUserBalance = async () => {
+      if (userInfo && userInfo.email) {
+        const user = await getUserByemail(userInfo.email);
+        if (user) {
+          const userBalance = await getUserByBalance(user.id);
+          setBalance(userBalance);
+        }
+      }
+
+    };
+    fetchUserBalance();
+  })
 }
