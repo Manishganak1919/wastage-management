@@ -27,7 +27,7 @@ import {
   createUser,
   getUserByemail,
   getUnreadNotification,
-  getUserBalance
+  getUserBalance,
 } from "@/utils/db/actions";
 import { clearInterval } from "timers";
 // import {useMediaQuery} from ''
@@ -58,7 +58,6 @@ interface HeaderProps {
   totalEarnings: number;
 }
 
-
 interface NotificationData {
   id: number;
   createdAt: Date;
@@ -67,7 +66,6 @@ interface NotificationData {
   type: string;
   isRead: boolean;
 }
-
 
 export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const [provider, setProvider] = useState<IProvider | null>(null);
@@ -123,9 +121,9 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     // check notification after 3 seconds
     const notificationInterval = setInterval(fetchNotifications, 3000);
     return () => clearInterval(notificationInterval);
-  },[userInfo]);
+  }, [userInfo]);
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchUserBalance = async () => {
       if (userInfo && userInfo.email) {
         const user = await getUserByemail(userInfo.email);
@@ -134,25 +132,29 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
           setBalance(userBalance);
         }
       }
-
     };
     fetchUserBalance();
 
-    const handleBalanceUpdate = (event:CustomEvent)=>{
+    const handleBalanceUpdate = (event: CustomEvent) => {
       setBalance(event.detail);
-    }
+    };
 
-    window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+    window.addEventListener(
+      "balanceUpdate",
+      handleBalanceUpdate as EventListener
+    );
 
-    return()=>{
-      window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
-    }
-  },[userInfo])
+    return () => {
+      window.removeEventListener(
+        "balanceUpdate",
+        handleBalanceUpdate as EventListener
+      );
+    };
+  }, [userInfo]);
 
-
-  const login = async()=>{
-    if(!web3auth){
-      console.error('web3auth is not initialized');
+  const login = async () => {
+    if (!web3auth) {
+      console.error("web3auth is not initialized");
       return;
     }
     try {
@@ -162,18 +164,35 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       const user = await web3auth.getUserInfo();
       setUserInfo(user);
 
-      if(user.email){
-        localStorage.setItem('userEmail', user.email);
+      if (user.email) {
+        localStorage.setItem("userEmail", user.email);
         try {
-          await createUser(user.email , user.name || 'Anonymous user');
+          await createUser(user.email, user.name || "Anonymous user");
         } catch (error) {
-          console.log('error creating user', error);
+          console.log("error creating user", error);
         }
       }
     } catch (error) {
       console.error("Error during login");
     }
-  }
+  };
+
+  const logout = async () => {
+    if (!web3auth) {
+      console.log("web3auth is not initialized");
+      return;
+    }
+
+    try {
+      await web3auth.logout();
+      setProvider(null);
+      setLoggedin(false);
+      setUserInfo(null);
+      localStorage.removeItem("userEmail");
+    } catch (error) {
+      console.error("Error during logout", error);
+    }
+  };
 
   
 }
