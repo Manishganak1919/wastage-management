@@ -28,6 +28,7 @@ import {
   getUserByemail,
   getUnreadNotification,
   getUserBalance,
+  markNotificationAsRead,
 } from "@/utils/db/actions";
 import { clearInterval } from "timers";
 // import {useMediaQuery} from ''
@@ -208,5 +209,14 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
         }
       }
     }
+  };
+
+  const handleNotificationClick = async (notificationId: number) => {
+    await markNotificationAsRead(notificationId);
+    setNotification((prevNotifications) =>
+      prevNotifications.filter(
+        (notification) => notification.id !== notificationId
+      )
+    );
   };
 }
