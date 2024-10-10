@@ -26,7 +26,8 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import {
   createUser,
   getUserByemail,
-  getUnreadNotification
+  getUnreadNotification,
+  getUserBalance
 } from "@/utils/db/actions";
 import { clearInterval } from "timers";
 // import {useMediaQuery} from ''
@@ -57,13 +58,24 @@ interface HeaderProps {
   totalEarnings: number;
 }
 
+
+interface NotificationData {
+  id: number;
+  createdAt: Date;
+  userId: number;
+  message: string;
+  type: string;
+  isRead: boolean;
+}
+
+
 export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loggedin, setLoggedin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
   const pathName = usePathname();
-  const [notification, setNotification] = useState<Notification[]>([]);
+  const [notification, setNotification] = useState<NotificationData[]>([]);
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
@@ -118,12 +130,22 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       if (userInfo && userInfo.email) {
         const user = await getUserByemail(userInfo.email);
         if (user) {
-          const userBalance = await getUserByBalance(user.id);
+          const userBalance = await getUserBalance(user.id);
           setBalance(userBalance);
         }
       }
 
     };
     fetchUserBalance();
-  })
+
+    const handleBalanceUpdate = (event:CustomEvent)=>{
+      setBalance(event.detail);
+    }
+
+    window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+
+    return()=>{
+      window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+    }
+  },[userInfo])
 }
