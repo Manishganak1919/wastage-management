@@ -194,5 +194,19 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
     }
   };
 
-  
+  const getUserInfo = async () => {
+    if (web3auth.connected) {
+      const user = await web3auth.getUserInfo();
+      setUserInfo(user);
+
+      if (user.email) {
+        localStorage.removeItem("userEmail");
+        try {
+          await createUser(user.email, user.name || "Anonymous user");
+        } catch (error) {
+          console.error("Error during createUser", error);
+        }
+      }
+    }
+  };
 }
