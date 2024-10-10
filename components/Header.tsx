@@ -148,4 +148,32 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     }
   },[userInfo])
+
+
+  const login = async()=>{
+    if(!web3auth){
+      console.error('web3auth is not initialized');
+      return;
+    }
+    try {
+      const web3authProvider = await web3auth.connect();
+      setProvider(web3authProvider);
+      setLoggedin(true);
+      const user = await web3auth.getUserInfo();
+      setUserInfo(user);
+
+      if(user.email){
+        localStorage.setItem('userEmail', user.email);
+        try {
+          await createUser(user.email , user.name || 'Anonymous user');
+        } catch (error) {
+          console.log('error creating user', error);
+        }
+      }
+    } catch (error) {
+      console.error("Error during login");
+    }
+  }
+
+  
 }
