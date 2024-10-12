@@ -39,7 +39,7 @@ export default function Sidebar({ open }: SidebarProps) {
                 variant={pathname === item.href ? "secondary" : "ghost"}
                 className={`w-full justify-start py-3 ${
                   pathname === item.href
-                    ? "bg-green-100 text-green-800"
+                    ? "bg-orange-100 text-orange-800"
                     : "text-gray-800 hover:bg-gray-100"
                 }`}
               >
