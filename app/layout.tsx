@@ -10,9 +10,9 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const [sidebar, setSidebar] = useState(false);
   const [totalEarning, setTotalEarning] = useState(0);
 
